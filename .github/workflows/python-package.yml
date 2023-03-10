@@ -1,0 +1,58 @@
+
+    # название
+name: ExLab tests 🦀
+
+# целевые события для запуска
+# в данном случае это push и pull_request, в ветку main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# выполняемые действия
+jobs:
+  Runs-tests:
+    runs-on: ubuntu-latest
+    
+    # запускаются по шагам
+    # name - название шага
+    steps:
+          - uses: actions/checkout@v3
+          - name: Set up Python
+            uses: actions/setup-python@v4
+            with:
+                 python-version: '3.x'
+          - name: Install dependencies 🔧
+            run: |
+                   python -m pip install --upgrade pip
+                   pip install -r requirements.txt
+          - name: Test with pytest 🔨
+            run: |
+                   pytest tests/test_landing_page.py --alluredir=tests/results --reruns=5 --headless=True
+          
+          - name: Get Allure history 🕜
+            uses: actions/checkout@v2
+            if: always()
+            continue-on-error: true
+            with:
+                 ref: gh-pages
+                 path: gh-pages
+
+          - name: Allure Report action from marketplace 🎯
+            uses: simple-elf/allure-report-action@master
+            if: always()
+            id: allure-report
+            with:
+                  allure_results: tests/results
+                  gh_pages: gh-pages
+                  allure_report: allure-report
+                  allure_history: allure-history
+
+          - name: Deploy report to Github Pages ⌛
+            if: always()
+            uses: peaceiris/actions-gh-pages@v2
+            env:
+                PERSONAL_TOKEN: ${{ secrets.Key }}
+                PUBLISH_BRANCH: gh-pages
+                PUBLISH_DIR: allure-history
