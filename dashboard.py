@@ -1,33 +1,93 @@
+
 import streamlit as st
 import pandas as pd
-from streamlit_autorefresh import st_autorefresh
+import numpy as np
+import altair as alt
+import seaborn as sns
+import matplotlib.pyplot as plt
+import plotly.express as px
 
-st_autorefresh(interval=5 * 1000)
+def get_metrics(df):
+    average_lvl = df.Level.mean()
+    min_lvl = df.Level.min()
+    max_lvl = df.Level.max()
+    return [average_lvl, min_lvl, max_lvl]
 
 
-df = pd.read_csv("data.csv").drop(columns=["Dead"])
+def draw_class_dist(df):
+    new_df = df.Class.value_counts()
+    fig = px.bar(new_df, x = new_df.index.values, y = new_df.values, text_auto = True)
+    fig.update_layout(title = 'Сlass distribution', 
+        xaxis_title = "Classes", 
+        yaxis_title = 'Count', 
+        width = 800, 
+        height = 700, 
+        titlefont=dict(size=40),
+        )
+    fig.update_xaxes(tickangle=280, tickfont=dict(size=15), titlefont=dict(size=25))
+    fig.update_yaxes(titlefont=dict(size=25))
+    st.plotly_chart(fig, theme="streamlit")
 
-classes = sorted(df.Class.unique())
-chosen_class = st.selectbox(label = 'Choose class', options=["All classes", *classes ])
-top_five = st.checkbox(label="Top 5")
 
-def prepare_top_five(top_five_label):
-    if top_five_label==True:
-        return 5
-    else:
-        return None
+def draw_lvl_dist(df):
+    new_df = df.Level.value_counts()
+    fig = px.bar(new_df, x = new_df.index.values, y = new_df.values, text_auto = True)
+    fig.update_layout(title = 'Lvl distribution', 
+        xaxis_title = "Lvl", 
+        yaxis_title = 'Count', 
+        width = 800, 
+        height = 700, 
+        titlefont=dict(size=40),
+        )
+    fig.update_xaxes(tickangle=280, tickfont=dict(size=15), titlefont=dict(size=25))
+    fig.update_yaxes(titlefont=dict(size=25))
+    st.plotly_chart(fig, theme="streamlit")
 
-def read_data(df, chosen_class):
-    if chosen_class == "All classes":
-        count = df.shape[0]
+data = st.file_uploader("Upload a data file", type=["csv"])
+
+if data != None:
+    df = pd.read_csv(data, sep=",").drop(columns="Dead")
+    classes = sorted(df.Class.unique())
+    
+    selected_class = st.sidebar.selectbox("Choose class", options = ["All classes", *classes], index = 0)
+    how_much = st.sidebar.number_input("How much to show in Overall window?", min_value = 1, max_value = df.shape[0], value = 5)
+
+
+    if selected_class == "All classes":
+        st.header("Overall")
+        st.dataframe(df.head(how_much))
+
+        metrics_data = get_metrics(df)
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric("Total character", df.shape[0])
+        col2.metric("Average level is", round(metrics_data[0]))
+        col3.metric("Min level is", metrics_data[1])
+        col4.metric("Max level is", metrics_data[2])
         
-        return st.dataframe(df.sort_values(by=["Rank"], ascending=True).\
-            head(prepare_top_five(top_five)).reset_index(drop=True), width = 700), st.subheader(f"Total people: {count}")
-    else:
-        return st.dataframe(df[df.Class==chosen_class].\
-            sort_values(by="Level", ascending=False).\
-            reset_index(drop=True).\
-            head(prepare_top_five(top_five)), width = 700), None
-            
+        draw_class_dist(df)
 
-read_data(df, chosen_class)
+        draw_lvl_dist(df)
+
+
+    else:
+        new_df = df[df.Class==selected_class].sort_values(by="Rank")
+        
+
+        st.dataframe(new_df.head(how_much))
+
+        metrics_data = get_metrics(new_df)
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric("Total character", new_df.shape[0])
+        col2.metric("Average level is", round(metrics_data[0], 2))
+        col3.metric("Min level is", metrics_data[1])
+        col4.metric("Max level is", metrics_data[2])
+        
+
+
+
+
+
+
