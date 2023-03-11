@@ -9,6 +9,7 @@ def get_metrics(df):
     max_lvl = df.Level.max()
     return [average_lvl, min_lvl, max_lvl]
 
+
 def draw_class_dist_all_classes_graph(df):
     new_df = df.Class.value_counts()
     
@@ -18,31 +19,30 @@ def draw_class_dist_all_classes_graph(df):
         yaxis_title = 'Count', 
         width = 800, 
         height = 700, 
-        titlefont=dict(size=40),
-        )
+        titlefont=dict(size=40))
     fig.update_xaxes(tickangle=280, tickfont=dict(size=15), titlefont=dict(size=25))
-    fig.update_yaxes(titlefont=dict(size=25))
-    
+    fig.update_yaxes(titlefont=dict(size=25))    
     st.plotly_chart(fig, theme="streamlit")
+
 
 def draw_class_dist_all_classes_table(df):
     new_df = df.Class.value_counts().reset_index().rename(columns={"Class":"Total_count", "index":"Class_name"}).reset_index(drop=True)
     st.dataframe(new_df, use_container_width=True)
 
-def draw_lvl_dist_graph(df):
 
+def draw_lvl_dist_graph(df):
     new_df = df.Level.value_counts()
     fig = px.bar(new_df, x = new_df.index.values, y = new_df.values, text_auto = True)
-    fig.update_layout(title = 'Lvl distribution', 
-        xaxis_title = "Lvl", 
+    fig.update_layout(title = 'Level distribution', 
+        xaxis_title = "Level", 
         yaxis_title = 'Count', 
         width = 800, 
         height = 700, 
-        titlefont=dict(size=40),
-        )
+        titlefont=dict(size=40))
     fig.update_xaxes(tickangle=280, tickfont=dict(size=15), titlefont=dict(size=25))
     fig.update_yaxes(titlefont=dict(size=25))
     st.plotly_chart(fig, theme="streamlit")
+
 
 def draw_lvl_dist_all_classes_table(df):
     new_df = df.Level.value_counts().reset_index().rename(columns={"index":"Level", "Level": "Total_count"}).sort_values(by="Level", ascending=False).reset_index(drop=True)
@@ -56,8 +56,6 @@ def draw_metrics_data(df):
     col2.metric("Average level is", round(metrics_data[0], 2))
     col3.metric("Min level is", metrics_data[1])
     col4.metric("Max level is", metrics_data[2])
-
-
 
 
 data = st.file_uploader("Upload a data file", type=["csv"])
