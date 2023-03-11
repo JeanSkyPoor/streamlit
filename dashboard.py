@@ -1,17 +1,13 @@
-
-from matplotlib import widgets
 import streamlit as st
 import pandas as pd
-
-
 import plotly.express as px
+
 
 def get_metrics(df):
     average_lvl = df.Level.mean()
     min_lvl = df.Level.min()
     max_lvl = df.Level.max()
     return [average_lvl, min_lvl, max_lvl]
-
 
 def draw_class_dist_all_classes_graph(df):
     new_df = df.Class.value_counts()
@@ -31,10 +27,9 @@ def draw_class_dist_all_classes_graph(df):
 
 def draw_class_dist_all_classes_table(df):
     new_df = df.Class.value_counts().reset_index().rename(columns={"Class":"Total_count", "index":"Class_name"}).reset_index(drop=True)
-    st.dataframe(new_df, width=400)
+    st.dataframe(new_df, use_container_width=True)
 
-
-def draw_lvl_dist_all_classes_graph(df):
+def draw_lvl_dist_graph(df):
 
     new_df = df.Level.value_counts()
     fig = px.bar(new_df, x = new_df.index.values, y = new_df.values, text_auto = True)
@@ -50,15 +45,15 @@ def draw_lvl_dist_all_classes_graph(df):
     st.plotly_chart(fig, theme="streamlit")
 
 def draw_lvl_dist_all_classes_table(df):
-    new_df = df.Level.value_counts().reset_index().rename(columns={"index":"Lvl", "Level": "Total_count"}).sort_values(by="Lvl", ascending=False).reset_index(drop=True)
-    st.dataframe(new_df, width=400)
+    new_df = df.Level.value_counts().reset_index().rename(columns={"index":"Level", "Level": "Total_count"}).sort_values(by="Level", ascending=False).reset_index(drop=True)
+    st.dataframe(new_df, use_container_width=True)
 
 
 def draw_metrics_data(df):
     metrics_data = get_metrics(df)
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Total character", df.shape[0])
-    col2.metric("Average level is", round(metrics_data[0]))
+    col2.metric("Average level is", round(metrics_data[0], 2))
     col3.metric("Min level is", metrics_data[1])
     col4.metric("Max level is", metrics_data[2])
 
@@ -79,31 +74,40 @@ if data != None:
 
     if selected_class == "All classes":
         st.header("Overall")
-        st.dataframe(df.head(how_much))        
+        st.dataframe(df.head(how_much).sort_values(by='Rank'), use_container_width=True)        
         draw_metrics_data(df)
         
         st.header('Сlass distribution')
-        tab1, tab2 = st.tabs(["Graph", "Table"])
-        with tab1:
+        graph, table = st.tabs(["Graph", "Table"])
+        with graph:
             draw_class_dist_all_classes_graph(df)
-        with tab2:
+        with table:
             draw_class_dist_all_classes_table(df)
         
         st.header('Lvl distribution')
-        tab1, tab2 = st.tabs(["Graph", "Table"])
-        with tab1:
-            draw_lvl_dist_all_classes_graph(df)
-        with tab2:
+        graph, table = st.tabs(["Graph", "Table"])
+        with graph:
+            draw_lvl_dist_graph(df)
+        with table:
             draw_lvl_dist_all_classes_table(df)
 
 
     else:
+        st.header(f"Overall (selected class {selected_class})")
         new_df = df[df.Class==selected_class].sort_values(by="Rank")
+        st.dataframe(new_df.head(how_much), use_container_width=True)
+        draw_metrics_data(new_df)
+        graph, table = st.tabs(["Graph", "Table"])
+        with graph:
+            draw_lvl_dist_graph(new_df)
+        with table:
+            st.dataframe(new_df.Level.value_counts().reset_index().\
+                rename(columns={"index":"Level", "Level": "Total_count"}).\
+                sort_values(by="Level", ascending=False).reset_index(drop=True), use_container_width=True)
+        
         
 
-        st.dataframe(new_df.head(how_much))
-
-        draw_metrics_data(new_df)
+        
 
 
 
