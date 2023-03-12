@@ -63,70 +63,70 @@ def draw_metrics_data(df):
 
 
 
-#---USER AUTHENTICATION---
-#https://github.com/mkhorasani/Streamlit-Authenticator
-#load hashed passwords
-with open('config.yaml') as file:
-    config = yaml.load(file, Loader=SafeLoader)
+# ---USER AUTHENTICATION---
+# https://github.com/mkhorasani/Streamlit-Authenticator
+# load hashed passwords
+# with open('config.yaml') as file:
+#     config = yaml.load(file, Loader=SafeLoader)
 
-autenticator = stauth.Authenticate(config['credentials'],
-    config['cookie']['name'],
-    config['cookie']['key'],
-    config['cookie']['expiry_days'])
+# autenticator = stauth.Authenticate(config['credentials'],
+#     config['cookie']['name'],
+#     config['cookie']['key'],
+#     config['cookie']['expiry_days'])
 
-name, authentication_status, username = autenticator.login("Login", "main")
+# name, authentication_status, username = autenticator.login("Login", "main")
 
 
-if authentication_status == False:
-    st.error("Username\password is incorrect")
-if authentication_status == None:
-    st.warning("Please enter your login and password")
-if authentication_status == True:
-    autenticator.logout("Logout", "sidebar")
-    data_input = st.empty()
-    data = data_input.file_uploader("Upload a data file", type=["csv"])
+# if authentication_status == False:
+#     st.error("Username\password is incorrect")
+# if authentication_status == None:
+#     st.warning("Please enter your login and password")
+# if authentication_status == True:
+#     autenticator.logout("Logout", "sidebar")
+data_input = st.empty()
+data = data_input.file_uploader("Upload a data file", type=["csv"])
 
-    if data != None:
-        data_input.empty()
-        df = pd.read_csv(data, sep=",").drop(columns="Dead")
-        classes = sorted(df.Class.unique())
+if data != None:
+    data_input.empty()
+    df = pd.read_csv(data, sep=",").drop(columns="Dead")
+    classes = sorted(df.Class.unique())
+    
+    selected_class = st.sidebar.selectbox("Choose class", options = ["All classes", *classes], index = 0)
+    how_much = st.sidebar.number_input("How much to show in Overall window?", min_value = 1, max_value = df.shape[0], value = 5)
+
+
+    if selected_class == "All classes":
+        st.header("Overall")
+        st.dataframe(df.head(how_much).sort_values(by='Rank'), use_container_width=True)        
+        draw_metrics_data(df)
         
-        selected_class = st.sidebar.selectbox("Choose class", options = ["All classes", *classes], index = 0)
-        how_much = st.sidebar.number_input("How much to show in Overall window?", min_value = 1, max_value = df.shape[0], value = 5)
+        st.header('Сlass distribution')
+        graph, table = st.tabs(["Graph", "Table"])
+        with graph:
+            draw_class_dist_all_classes_graph(df)
+        with table:
+            draw_class_dist_all_classes_table(df)
+        
+        st.header('Lvl distribution')
+        graph, table = st.tabs(["Graph", "Table"])
+        with graph:
+            draw_lvl_dist_graph(df)
+        with table:
+            draw_lvl_dist_all_classes_table(df)
 
 
-        if selected_class == "All classes":
-            st.header("Overall")
-            st.dataframe(df.head(how_much).sort_values(by='Rank'), use_container_width=True)        
-            draw_metrics_data(df)
-            
-            st.header('Сlass distribution')
-            graph, table = st.tabs(["Graph", "Table"])
-            with graph:
-                draw_class_dist_all_classes_graph(df)
-            with table:
-                draw_class_dist_all_classes_table(df)
-            
-            st.header('Lvl distribution')
-            graph, table = st.tabs(["Graph", "Table"])
-            with graph:
-                draw_lvl_dist_graph(df)
-            with table:
-                draw_lvl_dist_all_classes_table(df)
-
-
-        else:
-            st.header(f"Overall (selected class {selected_class})")
-            new_df = df[df.Class==selected_class].sort_values(by="Rank")
-            st.dataframe(new_df.head(how_much), use_container_width=True)
-            draw_metrics_data(new_df)
-            graph, table = st.tabs(["Graph", "Table"])
-            with graph:
-                draw_lvl_dist_graph(new_df)
-            with table:
-                st.dataframe(new_df.Level.value_counts().reset_index().\
-                    rename(columns={"index":"Level", "Level": "Total_count"}).\
-                    sort_values(by="Level", ascending=False).reset_index(drop=True), use_container_width=True)
+    else:
+        st.header(f"Overall (selected class {selected_class})")
+        new_df = df[df.Class==selected_class].sort_values(by="Rank")
+        st.dataframe(new_df.head(how_much), use_container_width=True)
+        draw_metrics_data(new_df)
+        graph, table = st.tabs(["Graph", "Table"])
+        with graph:
+            draw_lvl_dist_graph(new_df)
+        with table:
+            st.dataframe(new_df.Level.value_counts().reset_index().\
+                rename(columns={"index":"Level", "Level": "Total_count"}).\
+                sort_values(by="Level", ascending=False).reset_index(drop=True), use_container_width=True)
             
         
 
