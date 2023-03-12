@@ -3,3 +3,4 @@ pandas
 streamlit_autorefresh
 plotly
 matplotlib
+streamlit-authenticator

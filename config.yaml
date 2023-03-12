@@ -1,0 +1,9 @@
+credentials:
+  usernames:
+    Jean_Sky_Poor:
+      name: Skipar Ivan
+      password: '$2b$12$tnyG/lADr/N6xvQ.QuC3zugT64o.q480Dnt0NlaqAZFb7qDDzLi.i'
+cookie:
+  expiry_days: 30
+  key: awdawdd
+  name: first_dashboard_cookies

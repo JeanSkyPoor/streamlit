@@ -1,3 +1,5 @@
 __pycache__
 env/
 data.csv
+generate_keys.py
+hashed_pw.pkl
