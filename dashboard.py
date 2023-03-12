@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import pickle
-from pathlib import Path
 import streamlit_authenticator as stauth
 from yaml.loader import SafeLoader
 import yaml
@@ -66,13 +64,8 @@ def draw_metrics_data(df):
 
 
 #---USER AUTHENTICATION---
-names = ["Skipar Ivan"]
-usernames = ["Jean_Sky_Poor"]
+#https://github.com/mkhorasani/Streamlit-Authenticator
 #load hashed passwords
-file_path = Path(__file__).parent / "hashed_pw.pkl"
-with file_path.open("rb") as file:
-    hashed_passwords = pickle.load(file)
-
 with open('config.yaml') as file:
     config = yaml.load(file, Loader=SafeLoader)
 
